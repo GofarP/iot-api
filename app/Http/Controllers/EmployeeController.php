@@ -37,8 +37,6 @@ class EmployeeController extends Controller
             'status' => 'success',
             'data' => $data,
         ], 200);
-
-
     }
 
     /**
@@ -82,7 +80,6 @@ class EmployeeController extends Controller
                 'status' => 'success',
                 'message' => 'Employee created successfully',
             ], 201);
-
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'failed',
@@ -90,8 +87,6 @@ class EmployeeController extends Controller
                 'error' => $e->getMessage(),
             ], 500);
         }
-
-
     }
 
     /**
@@ -115,7 +110,41 @@ class EmployeeController extends Controller
      */
     public function update(Request $request, Employee $employee)
     {
-        //
+        try {
+
+            $validator = Validator::make($request->all(), [
+                'name' => 'required|string|max:255',
+                'uid' => 'required|string|max:255|unique:employees,uid,' . $employee->id,
+            ], [
+                'name.required' => 'Name is required',
+                'uid.required' => 'UID is required',
+                'uid.unique' => 'UID must be unique',
+            ]);
+
+            if ($validator->fails()) {
+                $errors = $validator->errors();
+                return response()->json([
+                    'success' => false,
+                    'message' => $errors->all(),
+                    'errors' => [
+                        'name' => $errors->first('name'),
+                        'uid' => $errors->first('uid'),
+                    ]
+                ], 422);
+            }
+            $employee->update();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Employee created successfully',
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'An Error Occured While Updating The Employee',
+                'error' => $e->getMessage()
+            ], 500);
+        }
     }
 
     /**
@@ -123,6 +152,18 @@ class EmployeeController extends Controller
      */
     public function destroy(Employee $employee)
     {
-        //
+        try {
+            $employee->delete();
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Employee Deleted Successfully'
+            ], 200);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'failed',
+                'message' => 'An error occurred while deleting the employee',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 }
