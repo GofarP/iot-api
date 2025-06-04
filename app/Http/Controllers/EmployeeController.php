@@ -14,7 +14,7 @@ class EmployeeController extends Controller
      */
     public function index(Request $request)
     {
-        $uid = $request->get('uid');
+        $uid = $request->get('uid', '');
 
         if (!$uid) {
             $data = Employee::orderByDesc('created_at')->paginate(10);
@@ -132,11 +132,15 @@ class EmployeeController extends Controller
                     ]
                 ], 422);
             }
-            $employee->update();
+
+            $employee->update([
+                'name' => $request->name,
+                'uid' => $request->uid
+            ]);
 
             return response()->json([
                 'status' => 'success',
-                'message' => 'Employee created successfully',
+                'message' => 'Employee updated successfully',
             ], 201);
         } catch (\Exception $e) {
             return response()->json([

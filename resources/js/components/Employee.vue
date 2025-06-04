@@ -47,7 +47,7 @@
                 class="absolute top-2 right-2 text-gray-500 hover:text-gray-800 text-xl">&times;</button>
 
             <h2 class="text-xl font-bold mb-4">{{isEdit ? 'Edit Employee' : 'Add New Employee'}}</h2>
-            <form @submit.prevent="submitForm">
+            <form @submit.prevent="isEdit ? updateEmployee() : submitForm()">
                 <div class="mb-4">
                     <label class="block text-gray-700 mb-2">Name</label>
                     <input type="text" v-model="newEmployees.name" name="name" id="name"
@@ -77,8 +77,12 @@ import axios from 'axios';
 const employees = ref([]);
 let newEmployees = ref({
     name: '',
-    uid: ''
+    uid: '',
+    id:'',
 });
+
+
+const id=ref(0);
 const show = ref(false);
 
 const isEdit=ref(false);
@@ -107,7 +111,7 @@ const showModal = () => {
 const closeModal = () => {
     show.value = false;
     isEdit.value=false;
-    newEmployees = { name: '', uid: '' } // reset form
+    newEmployees = { name: '', uid: '' ,id:""} // reset form
 }
 
 const submitForm = async () => {
@@ -129,10 +133,26 @@ const submitForm = async () => {
 const editEmployee=async(index)=>{
     isEdit.value=true;
     show.value=true;
+    id.value=employees.value[index].id;
 
-    newEmployees={name:employees.value[index].name, uid:employees.value[index].uid}
+    newEmployees={name:employees.value[index].name, uid:employees.value[index].uid, id:employees.value[index].id}
 
 
+}
+
+const updateEmployee=async()=>{
+    try{
+        const response = await axios.put(`http://localhost:8000/api/employee/${id.value}`, newEmployees.value);
+        if(response.status==200){
+            fetchEmployee();
+            closeModal();
+        }else{
+            alert("Error When Updating Data");
+        }
+    }
+    catch(error){
+        console.error('Submit Error:',error)
+    }
 }
 
 const deleteEmployee = async (id) => {
