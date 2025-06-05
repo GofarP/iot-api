@@ -14,4 +14,12 @@ export default defineConfig({
 
         vue()
     ],
+    server: {
+        host: '192.168.5.250',
+        port: 5173,
+        cors: {
+            origin: 'http://192.168.5.250:8000',
+            credentials: true,
+        },
+    },
 });

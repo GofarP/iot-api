@@ -15,12 +15,22 @@ class EmployeeController extends Controller
     public function index(Request $request)
     {
         $uid = $request->get('uid', '');
+        $search = $request->get('search', '');
 
         if (!$uid) {
-            $data = Employee::orderByDesc('created_at')->paginate(10);
+            $query = Employee::query();
+
+            if (!empty($search)) {
+                $query->where(function ($q) use ($search) {
+                    $q->where('uid', 'like', "%{$search}%")
+                        ->orWhere('name', 'like', "%{$search}%");
+                });
+            }
+
+            $data = $query->orderByDesc('created_at')->paginate(10);
+
             return response()->json([
                 'status' => 'success',
-                // 'data' => $data,  // jangan pakai ini kalau mau langsung data
             ] + $data->toArray(), 200);
         }
 
@@ -37,6 +47,7 @@ class EmployeeController extends Controller
             'status' => 'success',
             'data' => $data,
         ], 200);
+
     }
 
     /**
@@ -141,7 +152,7 @@ class EmployeeController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Employee updated successfully',
-            ], 201);
+            ], 200);
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'failed',
