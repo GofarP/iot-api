@@ -6,12 +6,25 @@
                 <input type="text" v-model="searchTerm" @input="debouncedSearch" placeholder="Search..."
                     class="border bg-white border-gray-300 rounded py-2 px-4 mb-4" />
             </div>
-            <div class="text-right mb-4 mr-5">
-                <button @click="openModal()"
-                    class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4">
-                    Add Employee
-                </button>
+            <p class="ml-5">Show Page:{{ x }}</p>
+            <div class="flex justify-between items-center mb-4 nr-5">
+                <div class="text-gray-600 text-sm ml-5">
+                    <select v-model="x" class="border bg-white border-gray-300 rounded py-2 px-4">
+                        <option value="10">10</option>
+                        <option value="25">25</option>
+                        <option value="50">50</option>
+                        <option value="100">100</option>
+
+                    </select>
+                </div>
+                <div class="text-right mb-4 mr-5">
+                    <button @click="openModal()"
+                        class="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded mb-4">
+                        Add Employee
+                    </button>
+                </div>
             </div>
+
 
             <table class="min-w-full border-collapse border border-gray-200 bg-white">
                 <thead>
@@ -45,13 +58,21 @@
                     </tr>
                 </tbody>
             </table>
-            <TailwindPagination class="text-end mt-3" :data="employees" @pagination-change-page="fetchEmployees"
+            <TailwindPagination class="text-end mt-3 space" :data="employees" @pagination-change-page="fetchEmployees"
                 :limit="1" :keep-length="true"
                 :item-classes="['bg-white', 'text-gray-700', 'border', 'border-gray-300', 'px-2', 'py-1', 'text-sm']"
                 :active-classes="['bg-blue-500', 'text-white']"
                 :prev-button-class="['bg-gray-200', 'text-gray-700', 'px-3', 'py-1', 'rounded', 'text-sm']"
                 :next-button-class="['bg-gray-200', 'text-gray-700', 'px-3', 'py-1', 'rounded', 'text-sm']"
-                prev-label="Prev" next-label="Next" />
+                prev-label="Prev" next-label="Next">
+                <template #prev-nav>
+                    < </template>
+
+                        <template #next-nav>
+                            >
+                        </template>
+
+            </TailwindPagination>
 
         </div>
 
@@ -90,15 +111,18 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import axios from 'axios'
 import { TailwindPagination } from 'laravel-vue-pagination'
+
+
+let x = ref(10);
 
 const employees = ref({
     data: [],
     current_page: 1,
     last_page: 1,
-    per_page: 10,
+    per_page: x.value,
     total: 0,
 })
 
@@ -115,13 +139,10 @@ const form = ref({
     uid: '',
 })
 
-// Pagination button styles (buat tombol kecil & pendek)
 
-
-// Ambil data karyawan dari API dengan pagination dan search
-const fetchEmployees = async (page = 1) => {
+const fetchEmployees = async (page = 1, perPage = x.value) => {
     try {
-        const url = `http://192.168.5.250:8000/api/employee?page=${page}&search=${encodeURIComponent(searchTerm.value)}`
+        const url = `http://192.168.5.250:8000/api/employee?page=${page}&perPage=${perPage}&search=${encodeURIComponent(searchTerm.value)}`
         const res = await axios.get(url)
         employees.value = res.data
         currentPage.value = page
@@ -198,6 +219,13 @@ const deleteEmployee = async (id) => {
     }
 }
 
+// watch(x, (newVal) => {
+//     fetchEmployees(1, newVal)
+// })
+
+watch(x, (newVal)=>{
+    fetchEmployees(1, newVal);
+})
 onMounted(() => fetchEmployees(currentPage.value))
 </script>
 

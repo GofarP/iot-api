@@ -16,6 +16,7 @@ class EmployeeController extends Controller
     {
         $uid = $request->get('uid', '');
         $search = $request->get('search', '');
+        $perPage = $request->get('perPage', 10);
 
         if (!$uid) {
             $query = Employee::query();
@@ -27,7 +28,7 @@ class EmployeeController extends Controller
                 });
             }
 
-            $data = $query->orderByDesc('created_at')->paginate(10);
+            $data = $query->orderByDesc('created_at')->paginate($perPage);
 
             return response()->json([
                 'status' => 'success',
